@@ -40,6 +40,7 @@ protocol ViewStateProvider: ObservableObject {
 
 extension ViewStateProvider {
 	func performAction() {
+		viewState = .init(currentState: .loading, error: nil, data: nil)
 		action()
 			.map { (data: T) in ViewState<T>.init(currentState: .data, error: nil, data: data) }
 			.mapError { (error: Error) in ViewState<T>.init(currentState: .error, error: error, data: nil) }
@@ -70,14 +71,30 @@ extension StatefulView {
 	}
 }
 
-struct ContentView: View {
+final class ContentViewModel: ViewStateProvider {
+	@Published var viewState: ViewState<String> = .init(currentState: .initial, error: nil, data: nil)
+	
+	var cancellables: [AnyCancellable] = []
+
+	func action() -> AnyPublisher<String, Error> {
+		successApi("swiftanytime!")
+	}
+}
+
+struct ContentView: StatefulView {
+	
+	@ObservedObject var viewModel: ContentViewModel
+	
 	var body: some View {
-		Text("Content")
+		statefulViewBuilder { data in
+			Text(data)
+		}
+		.onAppear { viewModel.performAction() }
 	}
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-		ContentView()
+		ContentView(viewModel: .init())
     }
 }
