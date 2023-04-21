@@ -26,18 +26,31 @@ struct ViewState<T> {
 }
 
 struct ContentView: View {
-	let viewState = ViewState<String>.init(currentState: .initial, error: AppError(), data: "nil")
+	@State var viewState = ViewState<String>.init(currentState: .initial, error: AppError(), data: "nil")
     
 	var body: some View {
 		ZStack {
-			switch viewState.currentState {
-			case .initial: Text("Initial")
-			case .loading: Text("Loading...")
-			case .error: Text(viewState.error?.localizedDescription ?? "")
-			case .data: Text(viewState.data ?? "")
+			Button(action: {
+				switch self.viewState.currentState {
+				case .initial:
+					self.viewState = .init(currentState: .loading, error: nil, data: nil)
+				case .loading:
+					self.viewState = .init(currentState: .data, error: nil, data: "swift anytime!")
+				case .data:
+					self.viewState = .init(currentState: .error, error: AppError(), data: nil)
+				case .error:
+					self.viewState = .init(currentState: .initial, error: nil, data: nil)
+				}
+			}) {
+				switch viewState.currentState {
+				case .initial: Text("Initial")
+				case .loading: Text("Loading...")
+				case .error: Text(viewState.error?.localizedDescription ?? "")
+				case .data: Text(viewState.data ?? "")
+				}
 			}
 		}
-    }
+	}
 }
 
 struct ContentView_Previews: PreviewProvider {
