@@ -25,28 +25,36 @@ struct ViewState<T> {
 	}
 }
 
+final class ContentViewModel: ObservableObject {
+	@Published var viewState = ViewState<String>.init(currentState: .initial, error: nil, data: nil)
+	
+	func updateState() {
+		switch self.viewState.currentState {
+		case .initial:
+			self.viewState = .init(currentState: .loading, error: nil, data: nil)
+		case .loading:
+			self.viewState = .init(currentState: .data, error: nil, data: "swift anytime!")
+		case .data:
+			self.viewState = .init(currentState: .error, error: AppError(), data: nil)
+		case .error:
+			self.viewState = .init(currentState: .initial, error: nil, data: nil)
+		}
+	}
+}
+
 struct ContentView: View {
-	@State var viewState = ViewState<String>.init(currentState: .initial, error: AppError(), data: "nil")
-    
+	@ObservedObject var viewModel: ContentViewModel
+	
 	var body: some View {
 		ZStack {
 			Button(action: {
-				switch self.viewState.currentState {
-				case .initial:
-					self.viewState = .init(currentState: .loading, error: nil, data: nil)
-				case .loading:
-					self.viewState = .init(currentState: .data, error: nil, data: "swift anytime!")
-				case .data:
-					self.viewState = .init(currentState: .error, error: AppError(), data: nil)
-				case .error:
-					self.viewState = .init(currentState: .initial, error: nil, data: nil)
-				}
+				self.viewModel.updateState()
 			}) {
-				switch viewState.currentState {
+				switch viewModel.viewState.currentState {
 				case .initial: Text("Initial")
 				case .loading: Text("Loading...")
-				case .error: Text(viewState.error?.localizedDescription ?? "")
-				case .data: Text(viewState.data ?? "")
+				case .error: Text(viewModel.viewState.error?.localizedDescription ?? "")
+				case .data: Text(viewModel.viewState.data ?? "")
 				}
 			}
 		}
@@ -55,6 +63,6 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+		ContentView(viewModel: .init())
     }
 }

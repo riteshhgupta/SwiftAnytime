@@ -11,7 +11,7 @@ import SwiftUI
 struct SwiftAnytimeApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+			ContentView(viewModel: .init())
         }
     }
 }
