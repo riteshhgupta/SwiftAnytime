@@ -26,7 +26,7 @@ struct ViewState<T> {
 }
 
 final class ContentViewModel: ObservableObject {
-	@Published var viewState = ViewState<String>.init(currentState: .initial, error: nil, data: nil)
+	var viewState = ViewState<String>.init(currentState: .initial, error: nil, data: nil)
 	
 	func updateState() {
 		switch self.viewState.currentState {
@@ -39,6 +39,7 @@ final class ContentViewModel: ObservableObject {
 		case .error:
 			self.viewState = .init(currentState: .initial, error: nil, data: nil)
 		}
+		objectWillChange.send()
 	}
 }
 
