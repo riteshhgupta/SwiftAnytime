@@ -5,6 +5,7 @@
 //  Created by Ritesh Gupta on 21/04/23.
 //
 
+import Combine
 import SwiftUI
 
 struct AppError {}
@@ -48,7 +49,14 @@ final class ContentViewInnerModel: ObservableObject {
 
 final class ContentViewModel: ObservableObject {
 	@Published var innerModel:ContentViewInnerModel = .init()
+	var cancellables: [AnyCancellable] = []
 
+	init() {
+		innerModel.$viewState.sink { _ in
+			self.objectWillChange.send()
+		}.store(in: &cancellables)
+	}
+	
 	func updateState() {
 		innerModel.updateState()
 	}
