@@ -47,16 +47,28 @@ final class ContentViewInnerModel: ObservableObject {
 	}
 }
 
-final class ContentViewModel: ObservableObject {
-	@Published var innerModel:ContentViewInnerModel = .init()
-	var cancellables: [AnyCancellable] = []
-
-	init() {
-		innerModel.$viewState.sink { _ in
-			self.objectWillChange.send()
-		}.store(in: &cancellables)
-	}
+struct ContentInnerView: View {
+	@ObservedObject var viewModel: ContentViewInnerModel
 	
+	var body: some View {
+		ZStack {
+			Button(action: {
+				self.viewModel.updateState()
+			}) {
+				switch viewModel.viewState.currentState {
+				case .initial: Text("Initial")
+				case .loading: Text("Loading...")
+				case .error: Text(viewModel.viewState.error?.localizedDescription ?? "")
+				case .data: Text(viewModel.viewState.data ?? "")
+				}
+			}
+		}
+	}
+}
+
+final class ContentViewModel: ObservableObject {
+	@Published var innerModel: ContentViewInnerModel = .init()
+
 	func updateState() {
 		innerModel.updateState()
 	}
@@ -66,18 +78,7 @@ struct ContentView: View {
 	@ObservedObject var viewModel: ContentViewModel
 	
 	var body: some View {
-		ZStack {
-			Button(action: {
-				self.viewModel.updateState()
-			}) {
-				switch viewModel.innerModel.viewState.currentState {
-				case .initial: Text("Initial")
-				case .loading: Text("Loading...")
-				case .error: Text(viewModel.innerModel.viewState.error?.localizedDescription ?? "")
-				case .data: Text(viewModel.innerModel.viewState.data ?? "")
-				}
-			}
-		}
+		ContentInnerView(viewModel: viewModel.innerModel)
 	}
 }
 
