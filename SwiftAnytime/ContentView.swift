@@ -25,8 +25,12 @@ struct ViewState<T> {
 	}
 }
 
-final class ContentViewModel: ObservableObject {
-	var viewState = ViewState<String>.init(currentState: .initial, error: nil, data: nil)
+final class ContentViewInnerModel: ObservableObject {
+	@Published var viewState = ViewState<String>.init(currentState: .initial, error: nil, data: nil) {
+		didSet {
+			print(viewState)
+		}
+	}
 	
 	func updateState() {
 		switch self.viewState.currentState {
@@ -39,7 +43,14 @@ final class ContentViewModel: ObservableObject {
 		case .error:
 			self.viewState = .init(currentState: .initial, error: nil, data: nil)
 		}
-		objectWillChange.send()
+	}
+}
+
+final class ContentViewModel: ObservableObject {
+	@Published var innerModel:ContentViewInnerModel = .init()
+
+	func updateState() {
+		innerModel.updateState()
 	}
 }
 
@@ -51,11 +62,11 @@ struct ContentView: View {
 			Button(action: {
 				self.viewModel.updateState()
 			}) {
-				switch viewModel.viewState.currentState {
+				switch viewModel.innerModel.viewState.currentState {
 				case .initial: Text("Initial")
 				case .loading: Text("Loading...")
-				case .error: Text(viewModel.viewState.error?.localizedDescription ?? "")
-				case .data: Text(viewModel.viewState.data ?? "")
+				case .error: Text(viewModel.innerModel.viewState.error?.localizedDescription ?? "")
+				case .data: Text(viewModel.innerModel.viewState.data ?? "")
 				}
 			}
 		}
